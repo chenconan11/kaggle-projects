@@ -33,9 +33,9 @@ def find_classes(labels_file):
     return n_classes, classes_to_name, img_to_classes
 
 
-def make_dataset(root, img_to_classes, mode):
+def make_dataset(root_dir, img_to_classes, mode):
     samples = []
-    data_dir = os.path.expanduser(root)
+    data_dir = os.path.expanduser(root_dir)
     if os.path.exists(data_dir):
         for path, _, file_list in os.walk(data_dir):
                 for file_name in sorted(file_list):
@@ -51,14 +51,14 @@ def make_dataset(root, img_to_classes, mode):
 
 
 class KaggleImageFolder(data.Dataset):
-    def __init__(self, root, labels_file=None, transform=None, mode='test', loader=Image.open, split_p=None):
+    def __init__(self, root_dir, labels_file=None, transform=None, mode='test', loader=Image.open, split_p=None):
         if mode not in ['train', 'valid', 'test']:
             raise Exception('''mode must in 'train', 'valid', 'test' ''')
         if labels_file is None and mode != 'test':
             raise Exception('''labels file is None!''')
 
         self.n_classes, self.classes_to_name, self.img_to_classes = find_classes(labels_file)
-        self.samples = make_dataset(root, self.img_to_classes, mode)
+        self.samples = make_dataset(root_dir, self.img_to_classes, mode)
         self.transform = transform
         self.mode = mode
         self.loader = loader
@@ -113,7 +113,7 @@ if __name__ == '__main__':
     root = 'data'
     train_dir = root + '/train'
     test_dir = root + '/test'
-    labels_file = 'labels.csv'
+    labels_csv = 'labels.csv'
     # train_data = KaggleImageFolder(train_dir, labels_file, mode='train', split_p=0.2)
     # print(len(train_data))
     # valid_data = KaggleImageFolder(train_dir, labels_file, mode='valid', split_p=0.2)
@@ -121,9 +121,9 @@ if __name__ == '__main__':
     # test_data = KaggleImageFolder(test_dir, mode='test')
     # print(len(test_data))
 
-    train_data = KaggleImageFolder(train_dir, labels_file, mode='train')
+    train_data = KaggleImageFolder(train_dir, labels_csv, mode='train')
     print(len(train_data))
-    valid_data = KaggleImageFolder(train_dir, labels_file, mode='test', split_p=0.2)
+    valid_data = KaggleImageFolder(train_dir, labels_csv, mode='test', split_p=0.2)
     print(len(valid_data))
-    test_data = KaggleImageFolder(test_dir, labels_file, mode='test')
+    test_data = KaggleImageFolder(test_dir, labels_csv, mode='test')
     print(len(test_data))
