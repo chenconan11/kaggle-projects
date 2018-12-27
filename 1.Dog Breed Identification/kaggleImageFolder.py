@@ -52,6 +52,10 @@ def make_dataset(root_dir, img_to_classes, mode):
 
 class KaggleImageFolder(data.Dataset):
     def __init__(self, root_dir, labels_file=None, transform=None, mode='test', loader=Image.open, split_p=None):
+        if not os.path.exists(root_dir):
+            raise Exception("{} is not exist!".format(root_dir))
+        if not os.path.isdir(root_dir):
+            raise Exception("{} is not a valid path".format(root_dir))
         if mode not in ['train', 'valid', 'test']:
             raise Exception('''mode must in 'train', 'valid', 'test' ''')
         if labels_file is None and mode != 'test':
@@ -110,20 +114,21 @@ class KaggleImageFolder(data.Dataset):
 
 if __name__ == '__main__':
 
-    root = 'data'
+    root = 'F:/DATA/dog breed'
     train_dir = root + '/train'
     test_dir = root + '/test'
     labels_csv = 'labels.csv'
-    # train_data = KaggleImageFolder(train_dir, labels_file, mode='train', split_p=0.2)
-    # print(len(train_data))
-    # valid_data = KaggleImageFolder(train_dir, labels_file, mode='valid', split_p=0.2)
-    # print(len(valid_data))
-    # test_data = KaggleImageFolder(test_dir, mode='test')
-    # print(len(test_data))
 
-    train_data = KaggleImageFolder(train_dir, labels_csv, mode='train')
+    train_data = KaggleImageFolder(train_dir, labels_csv, mode='train', split_p=0.2)
     print(len(train_data))
-    valid_data = KaggleImageFolder(train_dir, labels_csv, mode='test', split_p=0.2)
+    valid_data = KaggleImageFolder(train_dir, labels_csv, mode='valid', split_p=0.2)
     print(len(valid_data))
-    test_data = KaggleImageFolder(test_dir, labels_csv, mode='test')
+    test_data = KaggleImageFolder(test_dir, mode='test')
     print(len(test_data))
+
+    # train_data = KaggleImageFolder(train_dir, labels_csv, mode='train')
+    # print(len(train_data))
+    # valid_data = KaggleImageFolder(train_dir, labels_csv, mode='test', split_p=0.2)
+    # print(len(valid_data))
+    # test_data = KaggleImageFolder(test_dir, labels_csv, mode='test')
+    # print(len(test_data))
