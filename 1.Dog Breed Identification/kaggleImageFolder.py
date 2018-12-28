@@ -3,7 +3,7 @@ import torch.utils.data as data
 import pandas as pd
 import numpy as np
 
-from PIL import Image
+from PIL import Image, ImageOps
 
 import os
 import os.path
@@ -51,7 +51,7 @@ def make_dataset(root_dir, img_to_classes, mode):
 
 
 class KaggleImageFolder(data.Dataset):
-    def __init__(self, root_dir, labels_file=None, transform=None, mode='test', loader=Image.open, split_p=None):
+    def __init__(self, root_dir, labels_file=None, transform=None, mode='test', split_p=None, desired_size=224):
         if not os.path.exists(root_dir):
             raise Exception("{} is not exist!".format(root_dir))
         if not os.path.isdir(root_dir):
@@ -65,7 +65,8 @@ class KaggleImageFolder(data.Dataset):
         self.samples = make_dataset(root_dir, self.img_to_classes, mode)
         self.transform = transform
         self.mode = mode
-        self.loader = loader
+        self.loader = Image.open
+        self.desired_size = desired_size
 
         if split_p is not None:
             if mode == 'test':
@@ -90,6 +91,11 @@ class KaggleImageFolder(data.Dataset):
             path = self.samples[index]
 
         sample = self.loader(path)
+        if min(sample.size) < self.desired_size:
+            ratio = float(self.desired_size) / min(sample.size)
+            new_size = int(sample.size[0] * ratio) + 1, int(sample.size[1] * ratio) + 1
+            sample = sample.resize(new_size, Image.ANTIALIAS)
+
         if self.transform is not None:
             sample = self.transform(sample)
 
@@ -113,18 +119,31 @@ class KaggleImageFolder(data.Dataset):
 
 
 if __name__ == '__main__':
-
+    import torch
+    import torchvision.transforms as transforms
     root = 'F:/DATA/dog breed'
     train_dir = root + '/train'
     test_dir = root + '/test'
     labels_csv = 'labels.csv'
 
-    train_data = KaggleImageFolder(train_dir, labels_csv, mode='train', split_p=0.2)
+    data_transform = transforms.Compose([
+        transforms.RandomCrop(224),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    ])
+
+    train_data = KaggleImageFolder(train_dir, labels_csv, transform=data_transform, mode='train', split_p=0.2)
     print(len(train_data))
-    valid_data = KaggleImageFolder(train_dir, labels_csv, mode='valid', split_p=0.2)
+    valid_data = KaggleImageFolder(train_dir, labels_csv, transform=data_transform, mode='valid', split_p=0.2)
     print(len(valid_data))
-    test_data = KaggleImageFolder(test_dir, mode='test')
+    test_data = KaggleImageFolder(test_dir, transform=data_transform, mode='test')
     print(len(test_data))
+
+    train_dataloader = torch.utils.data.DataLoader(dataset=train_data, batch_size=32)
+    valid_dataloader = torch.utils.data.DataLoader(dataset=valid_data, batch_size=32)
+
+    for x, y in train_dataloader:
+        print(y.shape)
 
     # train_data = KaggleImageFolder(train_dir, labels_csv, mode='train')
     # print(len(train_data))
