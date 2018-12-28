@@ -102,7 +102,7 @@ class KaggleImageFolder(data.Dataset):
         if self.mode == 'test':
             return sample
         else:
-            return sample, target
+            return sample, np.long(target)
 
     def __len__(self):
         if self.mode == 'test':
