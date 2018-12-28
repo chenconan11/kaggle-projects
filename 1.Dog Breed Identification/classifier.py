@@ -31,11 +31,18 @@ class AngClassifier:
             self.hidden_units = hidden_units
             self.n_class = n_class
 
-            self.model = self.__create_model__
+            self.model = self.__create_model__()
+            self.classifier = self.model.classifier
+            self.train = self.model.train
+            self.eval = self.model.eval
+            self.cuda = self.model.cuda
 
     def __repr__(self):
         info = "One {} breeds classifier based on {}".format(self.n_class, self.arch)
         return info
+
+    def __call__(self, *args, **kwargs):
+        return self.model.forward(*args, **kwargs)
 
     def __create_model__(self):
         if self.arch == 'alexnet':
@@ -89,14 +96,14 @@ class AngClassifier:
         for param in model.parameters():
             param.requires_grad = False
 
-        first_in_features = model.classifier.in_features
+        first_in_features = model.classifier[0].in_features
 
         layers = OrderedDict()
         layers['linear0'] = nn.Linear(first_in_features, self.hidden_units[0])
         layers['drop0'] = nn.Dropout(p=0.5)
         layers['relu0'] = nn.ReLU(inplace=True)
 
-        for i, (input_dim, output_dim) in enumerate(zip(self.hidden_units[1:], self.hidden_units[2:])):
+        for i, (input_dim, output_dim) in enumerate(zip(self.hidden_units[0:], self.hidden_units[1:]), 1):
             layers['linear' + str(i)] = nn.Linear(input_dim, output_dim)
             layers['drop' + str(i)] = nn.Dropout(p=0.5)
             layers['relu' + str(i)] = nn.ReLU(inplace=True)
