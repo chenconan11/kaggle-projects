@@ -6,7 +6,7 @@ from collections import OrderedDict
 
 
 class AngClassifier:
-    def __init__(self, arch='vgg16', hidden_units=[1000, 500], n_classes=10, load_file=None):
+    def __init__(self, arch='vgg16', hidden_units=[1024], n_classes=10, load_file=None):
         self.__support_arches__ = ['alexnet', 'vgg11', 'vgg11_bn', 'vgg13', 'vgg13_bn',
                                    'vgg16', 'vgg16_bn', 'vgg19_bn', 'vgg19',
                                    'resnet18', 'resnet34', 'resnet50', 'resnet101',
