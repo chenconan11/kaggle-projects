@@ -6,7 +6,7 @@ from collections import OrderedDict
 
 
 class AngClassifier:
-    def __init__(self, arch='vgg16', hidden_units=[1000, 500], n_class=10, load_file=None):
+    def __init__(self, arch='vgg16', hidden_units=[1000, 500], n_classes=10, load_file=None):
         self.__support_arches__ = ['alexnet', 'vgg11', 'vgg11_bn', 'vgg13', 'vgg13_bn',
                                    'vgg16', 'vgg16_bn', 'vgg19_bn', 'vgg19',
                                    'resnet18', 'resnet34', 'resnet50', 'resnet101',
@@ -17,7 +17,7 @@ class AngClassifier:
             checkpoint = torch.load(load_file)
             self.arch = checkpoint['arch']
             self.hidden_units = checkpoint['hidden_units']
-            self.n_class = checkpoint['n_class']
+            self.n_classes = checkpoint['n_classes']
             self.model = self.__create_model__()
             self.model.load_state_dict(checkpoint['param_state_dict'])
         else:
@@ -29,15 +29,16 @@ class AngClassifier:
 
             self.arch = arch
             self.hidden_units = hidden_units
-            self.n_class = n_class
+            self.n_classes = n_classes
 
             self.model = self.__create_model__()
-            self.train = self.model.train
-            self.eval = self.model.eval
-            self.cuda = self.model.cuda
+
+        self.train = self.model.train
+        self.eval = self.model.eval
+        self.cuda = self.model.cuda
 
     def __repr__(self):
-        info = "One {} breeds classifier based on {}".format(self.n_class, self.arch)
+        info = "One {} breeds classifier based on {}".format(self.n_classes, self.arch)
         return info
 
     def __call__(self, *args, **kwargs):
@@ -57,7 +58,7 @@ class AngClassifier:
             layers['drop' + str(i)] = nn.Dropout(p=0.5)
             layers['relu' + str(i)] = nn.ReLU(inplace=True)
 
-        layers['linear' + str(len(self.hidden_units))] = nn.Linear(self.hidden_units[-1], self.n_class)
+        layers['linear' + str(len(self.hidden_units))] = nn.Linear(self.hidden_units[-1], self.n_classes)
 
         return nn.Sequential(layers)
 
@@ -130,14 +131,14 @@ class AngClassifier:
             model.classifier = self.__make_classifier__(first_in_features)
             self.classifier = model.classifier
         elif 'squeezenet' in self.arch:
-            final_conv = nn.Conv2d(512, self.n_class, kernel_size=1)
+            final_conv = nn.Conv2d(512, self.n_classes, kernel_size=1)
             model.classifier = nn.Sequential(
                 nn.Dropout(p=0.5),
                 final_conv,
                 nn.ReLU(inplace=True),
                 nn.AdaptiveAvgPool2d((1, 1))
             )
-            model.num_classes = self.n_class
+            model.num_classes = self.n_classes
             self.classifier = model.classifier
         elif 'inception' in self.arch:
             model.aux_logits = False
@@ -152,7 +153,7 @@ class AngClassifier:
             'arch': self.arch,
             'param_state_dict': self.model.state_dict(),
             'hidden_units': self.hidden_units,
-            'n_classes': self.n_class
+            'n_classes': self.n_classes
         }
         torch.save(checkpoint, save_path)
 
