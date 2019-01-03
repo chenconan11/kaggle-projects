@@ -45,6 +45,9 @@ class AngClassifier:
         return self.model.forward(*args, **kwargs)
 
     def __make_classifier__(self, first_in_features, head_drop=False):
+        if len(self.hidden_units) == 0 or self.hidden_units is None:
+            return nn.Linear(first_in_features, self.n_classes)
+
         layers = OrderedDict()
         if head_drop:
             layers['drop-h'] = nn.Dropout(0.5)
