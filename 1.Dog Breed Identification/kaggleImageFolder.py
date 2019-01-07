@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 
 from PIL import Image
-import random
+
 
 import os
 import os.path
@@ -80,7 +80,7 @@ class KaggleImageFolder(data.Dataset):
 
             self.split_p = split_p
             split_len = int(len(self.samples) * split_p)
-            index = [random.randint(0, split_len) for __ in range(split_len)]
+            index = np.random.randint(0, len(self.samples)-1, split_len)
             for i in range(len(self.samples)):
                 if i in index:
                     self.valid_samples.append(self.samples[i])
@@ -127,6 +127,10 @@ class KaggleImageFolder(data.Dataset):
 
 
 if __name__ == '__main__':
+
+    a = np.random.uniform(0, 100, 10)
+    print(len(set(a)))
+
     import torch
     import torchvision.transforms as transforms
     root = 'd:/DATA/dog breed'
