@@ -33,6 +33,7 @@ class AngClassifier:
 
             self.model = self.__create_model__()
 
+        self.parameters = self.model.parameters
         self.train = self.model.train
         self.eval = self.model.eval
         self.cuda = self.model.cuda
@@ -53,11 +54,13 @@ class AngClassifier:
             layers['drop-h'] = nn.Dropout(0.5)
 
         layers['linear0'] = nn.Linear(first_in_features, self.hidden_units[0])
+        torch.nn.init.kaiming_uniform_(layers['linear0'].weight, nonlinearity='relu')
         layers['drop0'] = nn.Dropout(p=0.5)
         layers['relu0'] = nn.ReLU(inplace=True)
 
         for i, (input_dim, output_dim) in enumerate(zip(self.hidden_units[0:], self.hidden_units[1:]), 1):
             layers['linear' + str(i)] = nn.Linear(input_dim, output_dim)
+            torch.nn.init.kaiming_uniform_(layers['linear' + str(i)].weight, nonlinearity='relu')
             layers['drop' + str(i)] = nn.Dropout(p=0.5)
             layers['relu' + str(i)] = nn.ReLU(inplace=True)
 
@@ -114,7 +117,11 @@ class AngClassifier:
                 self.arch
             ))
 
-        for param in model.parameters():
+        # n_param_layers = len(list(model.named_parameters()))
+
+        for i, param in enumerate(model.parameters()):
+            # if i == n_param_layers-5:
+            #     break
             param.requires_grad = False
 
         if 'alexnet' in self.arch:
@@ -156,6 +163,73 @@ class AngClassifier:
             'arch': self.arch,
             'param_state_dict': self.model.state_dict(),
             'hidden_units': self.hidden_units,
+            'n_classes': self.n_classes
+        }
+        torch.save(checkpoint, save_path)
+
+
+class MixClassifier(nn.Module):
+    def __init__(self, n_classes=10, load_file=None):
+        super(MixClassifier, self).__init__()
+
+        self.n_classes = n_classes
+        self.arch = self.__class__.__name__
+
+        if load_file is not None:
+            checkpoint = torch.load(load_file)
+            self.n_classes = checkpoint['n_classes']
+
+        resnet = models.resnet152(pretrained=True)
+        # inception = models.inception_v3(pretrained=True)
+        densenet = models.densenet169(pretrained=True)
+
+        self.resnet_feature = nn.Sequential(*list(resnet.children())[:-1])
+        # self.inception_feature = nn.Sequential(*list(inception.children())[:-1])
+        # self.inception_feature._modules.pop('13')
+        # self.inception_feature.add_module('global average', nn.AvgPool2d(35))
+
+        self.densenet_feature = nn.Sequential(*list(densenet.children())[:-1])
+        self.densenet_feature.add_module('relu_e', nn.ReLU(inplace=True))
+        self.densenet_feature.add_module('avg_pool_e', nn.AdaptiveAvgPool2d((1, 1)))
+
+        for param in self.resnet_feature.parameters():
+            param.requires_grad = False
+
+        # for param in self.inception_feature.parameters():
+        #     param.requires_grad = False
+
+        for param in self.densenet_feature.parameters():
+            param.requires_grad = False
+
+        # classifier_input_dim = resnet.fc.in_features + inception.fc.in_features
+
+        classifier_input_dim = resnet.fc.in_features + densenet.classifier.in_features
+
+        self.classifier = nn.Sequential(
+            nn.Linear(classifier_input_dim, 256),
+            nn.Dropout(p=0.5),
+            nn.ReLU(inplace=True),
+            nn.Linear(256, self.n_classes)
+        )
+
+        if load_file is not None:
+            self.load_state_dict(checkpoint['model_state_dict'])
+
+    def forward(self, x):
+        x1 = self.resnet_feature(x)
+        # x2 = self.inception_feature(x)
+        x2 = self.densenet_feature(x)
+
+        x1 = x1.view(x1.size(0), -1)
+        x2 = x2.view(x2.size(0), -1)
+
+        x = torch.cat((x1, x2), 1)
+        x = self.classifier(x)
+        return x
+
+    def save_model(self, save_path):
+        checkpoint = {
+            'model_state_dict': self.state_dict(),
             'n_classes': self.n_classes
         }
         torch.save(checkpoint, save_path)
