@@ -180,13 +180,9 @@ class MixClassifier(nn.Module):
             self.n_classes = checkpoint['n_classes']
 
         resnet = models.resnet152(pretrained=True)
-        # inception = models.inception_v3(pretrained=True)
         densenet = models.densenet169(pretrained=True)
 
         self.resnet_feature = nn.Sequential(*list(resnet.children())[:-1])
-        # self.inception_feature = nn.Sequential(*list(inception.children())[:-1])
-        # self.inception_feature._modules.pop('13')
-        # self.inception_feature.add_module('global average', nn.AvgPool2d(35))
 
         self.densenet_feature = nn.Sequential(*list(densenet.children())[:-1])
         self.densenet_feature.add_module('relu_e', nn.ReLU(inplace=True))
@@ -195,13 +191,8 @@ class MixClassifier(nn.Module):
         for param in self.resnet_feature.parameters():
             param.requires_grad = False
 
-        # for param in self.inception_feature.parameters():
-        #     param.requires_grad = False
-
         for param in self.densenet_feature.parameters():
             param.requires_grad = False
-
-        # classifier_input_dim = resnet.fc.in_features + inception.fc.in_features
 
         classifier_input_dim = resnet.fc.in_features + densenet.classifier.in_features
 
@@ -217,13 +208,12 @@ class MixClassifier(nn.Module):
 
     def forward(self, x):
         x1 = self.resnet_feature(x)
-        # x2 = self.inception_feature(x)
-        x2 = self.densenet_feature(x)
+        x3 = self.densenet_feature(x)
 
         x1 = x1.view(x1.size(0), -1)
-        x2 = x2.view(x2.size(0), -1)
+        x3 = x3.view(x3.size(0), -1)
 
-        x = torch.cat((x1, x2), 1)
+        x = torch.cat((x1, x3), 1)
         x = self.classifier(x)
         return x
 
