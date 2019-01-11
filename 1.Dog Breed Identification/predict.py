@@ -1,5 +1,5 @@
 from classifier import AngClassifier, MixClassifier
-from train import read_data
+from tools import read_data
 
 import torch
 import torch.nn.functional as F
