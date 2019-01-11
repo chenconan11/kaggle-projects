@@ -72,5 +72,8 @@ model = MixClassifier(load_file='model.pth')
 ## 总结下
 总体得分没有大神们的好，inception实验结果有点不正常，需要进一步研究下。
 
+## 参考
+https://zhuanlan.zhihu.com/p/30172532
+
 
 
