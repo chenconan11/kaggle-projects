@@ -1,6 +1,6 @@
-from kaggleImageFolder import KaggleImageFolder
+
 from classifier import AngClassifier, MixClassifier
-from torchvision.transforms import transforms
+from tools import accuracy, read_data
 import torch
 from torch.optim.lr_scheduler import StepLR
 
@@ -22,44 +22,6 @@ batch_size = None
 lr = None
 epochs = None
 save_per_iter = None
-
-
-def read_data(data_dir, mode, labels_csv='labels.csv', split_p=0.2):
-    if mode == 'train':
-        data_transform = transforms.Compose([
-            transforms.Resize(224),
-            transforms.RandomCrop(224),
-            # transforms.RandomHorizontalFlip(),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-        ])
-    else:
-        data_transform = transforms.Compose([
-            transforms.Resize(224),
-            transforms.CenterCrop(224),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-        ])
-
-    if mode == 'test':
-        return KaggleImageFolder(data_dir, transform=data_transform, mode='test')
-    else:
-        return KaggleImageFolder(data_dir, labels_csv, mode=mode, transform=data_transform, split_p=split_p)
-
-
-def accuracy(model, dataloader, n_data):
-    correct = 0
-    model.eval()
-    for x, y in dataloader:
-        if use_gpu:
-            x = x.cuda()
-            y = y.cuda()
-        z = model(x)
-        yhat = torch.argmax(z, 1)
-        correct += (y == yhat).sum().item()
-
-    acc = correct / n_data
-    return acc
 
 
 def train(model, train_dataloader, valid_dataloader, n_train, n_val, criterion, optimizer, epochs=20, scheduler=None):
@@ -233,9 +195,9 @@ def test_train():
     batch_size = 16
     hidden_units = [2048, 1024]
 
-    # for test_arch in arches:
-    #     arch = test_arch
-    #     main()
+    for test_arch in arches:
+        arch = test_arch
+        main()
     model_file = '''F:/DATA/dog breed/save_model/inception_v3-checkpoint-best.pth'''
     param_file = '''F:/DATA/dog breed/save_model/inception_v3-optimizer-checkpoint-best.pth'''
     main(model_file, param_file)
