@@ -6,13 +6,6 @@ import torch.nn.functional as F
 import pandas as pd
 import os
 
-def load_model(load_path):
-    checkpoint = torch.load(load_path)
-    n_classes = checkpoint['n_classes']
-    model = MixClassifier(n_classes)
-    model.load_state_dict(checkpoint['model_state_dict'])
-    return model
-
 
 def predict(data_dir, model_file, sample_submission):
     submission_samples = pd.read_csv(sample_submission)
@@ -26,8 +19,7 @@ def predict(data_dir, model_file, sample_submission):
 
     test_loader = torch.utils.data.DataLoader(dataset=test_data, batch_size=1)
 
-    # model = AngClassifier(load_file=model_file)
-    model = load_model(model_file)
+    model = AngClassifier(load_file=model_file)
     model.eval()
 
     cuda = torch.cuda.is_available()
