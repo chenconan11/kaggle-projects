@@ -63,16 +63,16 @@ model = MixClassifier(load_file='model.pth')
 ### 2.6 train_predict.ipynb
 使用get_features.ipynb特质向量做transfer learning。要比端到端的fine-tuning快很多。
 
-## kaggle 分数
+## 3. kaggle 分数
 * resnet152 0.40934
 * densenet169 0.66725
 * resnet152_densenet169 features 0.40715
 * inception ??
 
-## 总结下
+## 4. 总结下
 总体得分没有大神们的好，inception实验结果有点不正常，需要进一步研究下。
 
-## 参考
+## 5. 参考
 https://zhuanlan.zhihu.com/p/30172532
 
 
