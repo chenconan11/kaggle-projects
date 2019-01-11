@@ -143,4 +143,6 @@ if __name__ == '__main__':
     print(len(train_data))
     valid_data = KaggleImageFolder(train_dir, labels_csv, transform=data_transform, mode='valid', split_p=0.2)
     print(len(valid_data))
+    test_data = KaggleImageFolder(test_dir, transform=data_transform, mode='test')
+    print(len(test_data))
 
