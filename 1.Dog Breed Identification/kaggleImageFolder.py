@@ -146,3 +146,4 @@ if __name__ == '__main__':
     test_data = KaggleImageFolder(test_dir, transform=data_transform, mode='test')
     print(len(test_data))
 
+    print('test done..')
