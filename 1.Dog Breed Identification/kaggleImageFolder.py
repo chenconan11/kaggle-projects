@@ -127,11 +127,6 @@ class KaggleImageFolder(data.Dataset):
 
 
 if __name__ == '__main__':
-
-    a = np.random.uniform(0, 100, 10)
-    print(len(set(a)))
-
-    import torch
     import torchvision.transforms as transforms
     root = 'd:/DATA/dog breed'
     train_dir = root + '/train'
@@ -148,19 +143,4 @@ if __name__ == '__main__':
     print(len(train_data))
     valid_data = KaggleImageFolder(train_dir, labels_csv, transform=data_transform, mode='valid', split_p=0.2)
     print(len(valid_data))
-    # test_data = KaggleImageFolder(test_dir, transform=data_transform, mode='test')
-    # print(len(test_data))
-    # test_dataloader = torch.utils.data.DataLoader(dataset=test_data, batch_size=32)
 
-    # train_dataloader = torch.utils.data.DataLoader(dataset=train_data, batch_size=32)
-    # valid_dataloader = torch.utils.data.DataLoader(dataset=valid_data, batch_size=32)
-    #
-    # for x in test_dataloader:
-    #     print(x.shape)
-
-    # train_data = KaggleImageFolder(train_dir, labels_csv, mode='train')
-    # print(len(train_data))
-    # valid_data = KaggleImageFolder(train_dir, labels_csv, mode='test', split_p=0.2)
-    # print(len(valid_data))
-    # test_data = KaggleImageFolder(test_dir, labels_csv, mode='test')
-    # print(len(test_data))
