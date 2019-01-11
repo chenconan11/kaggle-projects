@@ -1,4 +1,4 @@
-from classifier import AngClassifier
+from classifier import AngClassifier, MixClassifier
 from train import read_data
 
 import torch
@@ -6,12 +6,15 @@ import torch.nn.functional as F
 import pandas as pd
 import os
 
-data_dir = 'f:/DATA/dog breed/test'
-model_file = '''F:/DATA/dog breed/save_model/inception_v3-checkpoint-1546407881.pth'''
-sample_submission = 'sample_submission.csv'
+def load_model(load_path):
+    checkpoint = torch.load(load_path)
+    n_classes = checkpoint['n_classes']
+    model = MixClassifier(n_classes)
+    model.load_state_dict(checkpoint['model_state_dict'])
+    return model
 
 
-def predict():
+def predict(data_dir, model_file, sample_submission):
     submission_samples = pd.read_csv(sample_submission)
     submission_samples = submission_samples.set_index('id')
 
@@ -23,25 +26,32 @@ def predict():
 
     test_loader = torch.utils.data.DataLoader(dataset=test_data, batch_size=1)
 
-    model = AngClassifier(load_file=model_file)
+    # model = AngClassifier(load_file=model_file)
+    model = load_model(model_file)
     model.eval()
 
     cuda = torch.cuda.is_available()
     if cuda:
         model.cuda()
 
-    for i, (image, x) in enumerate(zip(test_images, test_loader)):
-        print('{}/{}'.format(i, data_len))
-        if cuda:
-            x = x.cuda()
-        z = model(x)
-        prob = F.softmax(z, dim=1).cpu()[0].detach().numpy().tolist()
-        image = os.path.basename(image).split('.')[0]
+    with torch.no_grad():
+        for i, (image, x) in enumerate(zip(test_images, test_loader)):
+            print('{}/{}'.format(i, data_len))
+            if cuda:
+                x = x.cuda()
+                torch.backends.cudnn.benchmark = True
+            z = model(x)
+            prob = F.softmax(z, dim=1).cpu()[0].numpy().tolist()
+            image = os.path.basename(image).split('.')[0]
 
-        submission_samples.loc[image] = prob
+            submission_samples.loc[image] = prob
 
     submission_samples.to_csv('sample_submission_new.csv')
 
 
 if __name__ == '__main__':
-    predict()
+    data_dir = 'd:/DATA/dog breed/test'
+    model_file = '''d:/DATA/dog breed/save_model/MixClassifier-checkpoint-best.pth'''
+    sample_submission = 'sample_submission.csv'
+
+    predict(data_dir, model_file, sample_submission)
