@@ -43,7 +43,7 @@ def predict(data_dir, model_file, sample_submission):
 
 if __name__ == '__main__':
     data_dir = 'd:/DATA/dog breed/test'
-    model_file = '''d:/DATA/dog breed/save_model/MixClassifier-checkpoint-best.pth'''
+    model_file = '''d:/DATA/dog breed/save_models/resnet152-checkpoint-1547443851.pth'''
     sample_submission = 'sample_submission.csv'
 
     predict(data_dir, model_file, sample_submission)
