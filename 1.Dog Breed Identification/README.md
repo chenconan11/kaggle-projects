@@ -70,7 +70,10 @@ model = MixClassifier(load_file='model.pth')
 * inception ??
 
 ## 4. 总结下
-总体得分没有大神们的好，inception实验结果有点不正常，需要进一步研究下。
+* transform的形式对训练结果影响很大；
+* resnet效果是最满意的。
+* inception实验结果有点不正常，需要进一步研究下；
+* 总体得分没有大神们的好，调参需要耐心。
 
 ## 5. 参考
 https://zhuanlan.zhihu.com/p/30172532
