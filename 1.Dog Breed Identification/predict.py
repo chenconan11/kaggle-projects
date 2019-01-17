@@ -5,9 +5,14 @@ import torch
 import torch.nn.functional as F
 import pandas as pd
 import os
+import re
 
 
 def predict(data_dir, model_file, sample_submission):
+    timestamp = re.search(r'\d{10}', model_file, re.M | re.I).group()
+    if timestamp is None:
+        timestamp = 0
+
     submission_samples = pd.read_csv(sample_submission)
     submission_samples = submission_samples.set_index('id')
 
@@ -38,12 +43,13 @@ def predict(data_dir, model_file, sample_submission):
 
             submission_samples.loc[image] = prob
 
-    submission_samples.to_csv('sample_submission_new.csv')
+    submission_samples.to_csv('sample_submission_{}_{}.csv'.format(model.arch, timestamp))
 
 
 if __name__ == '__main__':
+
     data_dir = 'd:/DATA/dog breed/test'
-    model_file = '''d:/DATA/dog breed/save_models/resnet152-checkpoint-1547443851.pth'''
+    model_file = '''d:/DATA/dog breed/save_models/resnet152-checkpoint-1547710536.pth'''
     sample_submission = 'sample_submission.csv'
 
     predict(data_dir, model_file, sample_submission)
