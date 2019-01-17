@@ -64,10 +64,7 @@ model = MixClassifier(load_file='model.pth')
 使用get_features.ipynb特质向量做transfer learning。要比端到端的fine-tuning快很多。
 
 ## 3. kaggle 分数
-* resnet152 0.40934
-* densenet169 0.66725
-* resnet152_densenet169 features 0.40715
-* inception ??
+* resnet152 0.35968
 
 ## 4. 总结下
 * transform的形式对训练结果影响很大；
